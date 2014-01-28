@@ -1,0 +1,88 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<link rel="stylesheet" href="./style.css" type="text/css">
+		<title></title>
+	</head>
+	<body>
+		<div class="wrapper">
+			
+			<header>
+				<h1>
+					数字の認識
+				</h1>
+			</header>
+
+			<div class="main">
+				<div class="clearfix">
+					<div class="section-left">
+						<canvas id="canvas" width="300" height="300"></canvas>
+					</div>
+
+					<div class="section-right">
+						<table cellspacing="0">
+							<tr>
+								<td>0</td>
+								<td><span class="gage"><span class="gage-inner" id="gage0"></span></span><span class="label" id="label0">0%</span></td>
+							</tr>
+							<tr>
+								<td>1</td>
+								<td><span class="gage"><span class="gage-inner" id="gage1"></span></span><span class="label" id="label1">0%</span></td>
+							</tr>
+							<tr>
+								<td>2</td>
+								<td><span class="gage"><span class="gage-inner" id="gage2"></span></span><span class="label" id="label2">0%</span></td>
+							</tr>
+							<tr>
+								<td>3</td>
+								<td><span class="gage"><span class="gage-inner" id="gage3"></span></span><span class="label" id="label3">0%</span></td>
+							</tr>
+							<tr>
+								<td>4</td>
+								<td><span class="gage"><span class="gage-inner" id="gage4"></span></span><span class="label" id="label4">0%</span></td>
+							</tr>
+							<tr>
+								<td>5</td>
+								<td><span class="gage"><span class="gage-inner" id="gage5"></span></span><span class="label" id="label5">0%</span></td>
+							</tr>
+							<tr>
+								<td>6</td>
+								<td><span class="gage"><span class="gage-inner" id="gage6"></span></span><span class="label" id="label6">0%</span></td>
+							</tr>
+							<tr>
+								<td>7</td>
+								<td><span class="gage"><span class="gage-inner" id="gage7"></span></span><span class="label" id="label7">0%</span></td>
+							</tr>
+							<tr>
+								<td>8</td>
+								<td><span class="gage"><span class="gage-inner" id="gage8"></span></span><span class="label" id="label8">0%</span></td>
+							</tr>
+							<tr>
+								<td>9</td>
+								<td><span class="gage"><span class="gage-inner" id="gage9"></span></span><span class="label" id="label9">0%</span></td>
+							</tr>
+						</table>
+					</div>
+				</div>
+				<div style="text-align: center">
+					<button id="btnAnalyze">解析開始</button>
+					<button id="btnClear">クリア</button>
+					<span class="group">
+						<input type="text" placeholder="正しい値を入力" id="tdata" />
+						<button id="btnAdd">追加</button>
+					</span>
+					<button id="btnTrain">学習</button>
+					<button id="btnSave">保存</button>
+					<button id="btnLoad">読み込み</button>
+				</div>
+			</div>
+
+			<p id="log"></p> 
+		</div>
+
+		<script src="./js/jQuery.js" type="text/javascript"></script>
+		<script src="./js/Vector.js" type="text/javascript"></script>
+		<script src="./js/Canvas.js" type="text/javascript"></script>
+		<script src="./js/main.js" type="text/javascript"></script>
+	</body>
+</html>

@@ -1,0 +1,145 @@
+html,
+body {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+html,
+body,
+table {
+  font-size: 12px;
+}
+td {
+  padding: 5px;
+  border-bottom: 1px dashed #ccc;
+}
+td:nth-child(1) {
+  padding-left: 30px;
+}
+td:nth-child(2) {
+  padding-left: 0;
+  border-left: 1px solid #aaa;
+  width: 250px;
+}
+tr:last-child td {
+  border-bottom: none;
+}
+input[type="text"] {
+  border: 1px solid #888;
+  border-radius: 3px;
+  outline: none;
+  line-height: 16px;
+  padding: 5px 10px 4px;
+  margin: 0px 5px 2px 0;
+  font-size: 14px;
+  vertical-align: middle;
+}
+input[type="text"]:hover {
+  border-color: #444;
+}
+input[type="text"]:focus {
+  border-color: #06f;
+}
+input[type="button"],
+button {
+  font-size: 14px;
+  background: #fcfcfc;
+  border: 1px solid #888;
+  border-radius: 3px;
+  outline: none;
+  line-height: 16px;
+  padding: 5px 10px;
+  margin: 2px 5px 2px 0;
+  cursor: pointer;
+  vertical-align: middle;
+}
+input[type="button"]:hover,
+button:hover {
+  border-color: #444;
+  background: #f0f0f0;
+  box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.3);
+}
+input[type="button"]:active,
+button:active {
+  box-shadow: inset 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+  background: #ddd;
+}
+.gage {
+  display: block;
+  position: relative;
+  float: left;
+  width: 200px;
+  height: 20px;
+}
+.gage-inner {
+  display: block;
+  position: relative;
+  float: left;
+  height: 20px;
+  background: #08f;
+  width: 0%;
+  transition: 0.3s ease;
+  -webkit-transition: 0.3s ease;
+  -moz-transition: 0.3s ease;
+  -ms-transition: 0.3s ease;
+  -o-transition: 0.3s ease;
+}
+.gage-max .gage-inner {
+  background: #f50;
+}
+.label {
+  display: block;
+  position: relative;
+  float: right;
+  text-align: right;
+  height: 20px;
+  line-height: 20px;
+}
+.wrapper {
+  width: 800px;
+  margin: 0 auto;
+}
+header,
+footer,
+.main {
+  padding: 15px 0;
+}
+footer {
+  border-top: 1px solid #aaa;
+}
+.clearfix:after {
+  clear: both;
+  display: block;
+  content: " ";
+}
+.main {
+  display: block;
+  position: relative;
+  margin: 0 auto;
+  width: 640px;
+}
+.main > div {
+  margin-bottom: 30px;
+}
+.section-left {
+  float: left;
+}
+.section-right {
+  float: right;
+}
+.group {
+  display: inline-block;
+  vertical-align: middle;
+}
+.group > * {
+  float: left;
+  margin: 0 !important;
+  border-left-width: 0;
+  border-radius: 0;
+}
+.group > *:first-child {
+  border-radius: 3px 0 0 3px;
+}
+.group > *:last-child {
+  border-radius: 0 3px 3px 0;
+}
