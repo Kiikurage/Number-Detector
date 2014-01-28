@@ -1,12 +1,23 @@
 var maxX = 20,
 	maxY = 20,
-	Xcount = 9, //状態量2^4-1 + バイアス 1
+	Xcount = 9,
 	Zcount = 20,
 	Ycount = 10,
 	$canvas, canvas, state, tlist;
 
 function init() {
 	tlist = [];
+
+	for (var i = 0, max = tlist_arr.length; i < max; i++) {
+		var tdata_arr = tlist_arr[i];
+		tlist.push({
+			fv: V.apply(window, tdata_arr.fv),
+			label: V.apply(window, tdata_arr.label)
+		});
+	}
+
+	console.log("読み込み完了：教師データを" + tlist_arr.length + "個読み込みました");
+
 
 	$canvas = $("#canvas");
 	$canvas
@@ -74,7 +85,7 @@ function analyze() {
 	}
 
 	setGageValue(gageValue);
-	Y.print();
+	// Y.print();
 }
 
 function addTeacherData(ev) {
@@ -128,7 +139,7 @@ function update() {
 
 function getFVector(v) {
 	//result[0] はバイアスで常に1
-	result = [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
+	result = [1, 0, 0, 0, 0, 0, 0, 0, 0];
 
 	//	左上、右上、左下、右下　の順でビット化
 	//	■□		■□
@@ -138,39 +149,63 @@ function getFVector(v) {
 
 	for (var x = 0; x < maxX - 1; x++) {
 		for (var y = 0; y < maxY - 1; y++) {
-			var i = v[x * maxY + y][0] | v[(x + 1) * maxY + y][0] << 1 | v[x * maxY + y + 1][0] << 2 | v[(x + 1) * maxY + y + 1][0] << 3,
-				j = 0;
-			switch (i) {
-				case 3:
-					j = 1;
-					break;
-				case 5:
-					j = 2;
-					break;
-				case 11:
-					j = 3;
-					break;
-				case 7:
-					j = 4;
-					break;
-				case 13:
-					j = 5;
-					break;
-				case 14:
-					j = 6;
-					break;
-				case 9:
-					j = 7;
-					break;
-				case 6:
-					j = 8;
-					break;
+			var i = 0;
+			i |= v[x * maxY + y][0];
+			i |= v[(x + 1) * maxY + y][0] << 1;
+			i |= v[x * maxY + y + 1][0] << 2;
+			i |= v[(x + 1) * maxY + y + 1][0] << 3;
+
+			// ■■
+			// □□
+			if (i == 3) {
+				result[1]++;
 			}
-			if (!j) continue;
-			result[j]++;
+
+			// ■□
+			// ■□
+			if (i == 5) {
+				result[2]++;
+			}
+
+			// ■□
+			// □■
+			if (i == 9) {
+				result[3]++;
+			}
+
+			// □■
+			// ■□
+			if (i == 6) {
+				result[4]++;
+			}
+
+			// ■■
+			// ■□
+			if (i == 7) {
+				result[5]++;
+			}
+
+			// ■■
+			// □■
+			if (i == 11) {
+				result[6]++;
+			}
+
+			// ■□
+			// ■■
+			if (i == 13) {
+				result[7]++;
+			}
+
+			// □■
+			// ■■
+			if (i == 14) {
+				result[8]++;
+			}
 		}
 	}
-	V.apply(window, result).print();
+
+	// V.apply(window, result).print();
 
 	return V.apply(window, result);
 }
@@ -204,34 +239,60 @@ function tanh(arg) {
 
 function save() {
 	perceptron.save();
+
+	var tlist_arr = [];
+	for (var k = 0, max = tlist.length; k < max; k++) {
+		var tdata = tlist[k];
+
+		var fv_arr = [];
+		for (var i = 0, size1 = tdata.fv.size1; i < size1; i++) {
+			fv_arr.push([]);
+			for (var j = 0, size2 = tdata.fv.size2; j < size2; j++) {
+				fv_arr[i][j] = tdata.fv[i][j];
+			}
+		}
+
+		var label_arr = [];
+		for (var i = 0, size1 = tdata.label.size1; i < size1; i++) {
+			label_arr.push([]);
+			for (var j = 0, size2 = tdata.label.size2; j < size2; j++) {
+				label_arr[i][j] = tdata.label[i][j];
+			}
+		}
+
+		tlist_arr.push({
+			fv: fv_arr,
+			label: label_arr
+		});
+	}
+
+	localStorage.setItem("tlist", JSON.stringify(tlist_arr));
+
 	console.log("保存完了");
 }
 
 function load() {
 	perceptron.load();
+
+	var tlist_arr = JSON.parse(localStorage.getItem("tlist"));
+	for (var i = 0, max = tlist_arr.length; i < max; i++) {
+		var tdata_arr = tlist_arr[i];
+		tlist.push({
+			fv: V.apply(window, tdata_arr.fv),
+			label: V.apply(window, tdata_arr.label)
+		});
+	}
+
 	console.log("読み込み完了");
+	console.log("教師データを" + tlist_arr.length + "個読み込みました");
 }
 
 $(init);
 
 var perceptron = (function() {
 	var _ = {},
-		W1 = new V(),
-		W2 = new V();
-
-	W1 = W1.resize(Xcount, Zcount);
-	for (var i = 0, size1 = W1.size1; i < size1; i++) {
-		for (var j = 0, size2 = W1.size2; j < size2; j++) {
-			W1[i][j] = Math.random();
-		}
-	}
-
-	W2 = W2.resize(Zcount, Ycount);
-	for (var i = 0, size1 = W2.size1; i < size1; i++) {
-		for (var j = 0, size2 = W2.size2; j < size2; j++) {
-			W2[i][j] = Math.random();
-		}
-	}
+		W1 = V.apply(window, w1_arr),
+		W2 = V.apply(window, w2_arr);
 
 	_.W1 = function() {
 		return W1;
@@ -242,26 +303,31 @@ var perceptron = (function() {
 	};
 
 	_.show = function() {
-		console.log("----------");
-		W1.print();
-		console.log("----------");
-		W2.print();
+		// console.log("----------");
+		// W1.print();
+
+		// console.log("----------");
+		// W2.print();
 	}
 
 	_.calcY = function(X) {
 		var Z, Y;
 
 		Z = W1.multi(X);
-		console.log(Z[0][1]);
+		// console.log("----------");
+		// Z.print();
+
 		for (var i = 0; i < Zcount; i++) {
 			Z[0][i] = tanh(Z[0][i]);
 		}
 		Z[0][0] = 1.0;
-		Z.print();
-		console.log("----------");
+
+		// console.log("----------");
+		// Z.print();
 
 		Y = W2.multi(Z);
-		Y.print();
+		// console.log("----------");
+		// Y.print();
 
 		return Y;
 	};
@@ -304,21 +370,21 @@ var perceptron = (function() {
 
 		//--------------------------------------------------------------------
 		//Y二乗和誤差の計算
-		Z = W1.multi(X);
-		for (var i = 0; i < Zcount; i++) {
-			Z[0][i] = tanh(Z[0][i]);
-		}
-		Z[0][0] = 1.0;
+		// Z = W1.multi(X);
+		// for (var i = 0; i < Zcount; i++) {
+		// 	Z[0][i] = tanh(Z[0][i]);
+		// }
+		// Z[0][0] = 1.0;
 
-		Y = W2.multi(Z);
-		DELTA_Y = Y.sub(T);
-		console.log("-------------------");
-		console.log("教師データ");
-		T.transpose().print();
-		console.log("結果Y");
-		Y.transpose().print();
-		console.log("誤差");
-		DELTA_Y.transpose().multi(DELTA_Y).print();
+		// Y = W2.multi(Z);
+		// DELTA_Y = Y.sub(T);
+		// console.log("-------------------");
+		// console.log("教師データ");
+		// T.transpose().print();
+		// console.log("結果Y");
+		// Y.transpose().print();
+		// console.log("誤差");
+		// DELTA_Y.transpose().multi(DELTA_Y).print();
 	}
 
 	_.save = function() {
@@ -354,12 +420,12 @@ var perceptron = (function() {
 	return _
 }());
 
-// var console = {
-// 	log: function(txt) {
-// 		$("#log")
-// 			.text(txt)
-// 			.fadeIn(300)
-// 			.delay(2000)
-// 			.fadeOut(300);
-// 	}
-// }
+var console = {
+	log: function(txt) {
+		$("#log")
+			.text(txt)
+			.fadeIn(600)
+			.delay(4000)
+			.fadeOut(600);
+	}
+}

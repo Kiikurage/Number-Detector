@@ -16,6 +16,7 @@
 				<p>②正しい値を入力し、「追加」ボタンをおして教師データを追加する。</p>
 				<p>③教師データをいくつか足してから「学習」ボタンを押して学習する。</p>
 				<p>④数字を書いて「解析開始」ボタンを押す → 解析できる　ハズ</p>
+				<p>予め、0〜7までの数字はそれぞれ50個程度、教師データを入力してあるため、ページ読み込み後すぐに識別ができます。</p>
 			</header>
 
 			<div class="main">
@@ -80,6 +81,7 @@
 					<button id="btnSave">保存</button>
 					<button id="btnLoad">読み込み</button>
 				</div>
+				<p id="log" style="display: none;"></p>
 			</div>
 
 			<footer>
@@ -95,6 +97,7 @@
 		<script src="./js/jQuery.js" type="text/javascript"></script>
 		<script src="./js/Vector.js" type="text/javascript"></script>
 		<script src="./js/Canvas.js" type="text/javascript"></script>
+		<script src="./js/preset.js" type="text/javascript"></script>
 		<script src="./js/main.js" type="text/javascript"></script>
 	</body>
 </html>

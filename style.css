@@ -143,3 +143,11 @@ footer {
 .group > *:last-child {
   border-radius: 0 3px 3px 0;
 }
+#log {
+  position: fixed;
+  bottom: 30px;
+  left: 30px;
+  padding: 5px 10px;
+  color: #fff;
+  background: #0a3;
+}
