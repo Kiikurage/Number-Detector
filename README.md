@@ -1,4 +1,4 @@
-Number-Detector
+#Number-Detector
 多層パーセプトロンの勉強
 数字（0〜9の1文字）を認識します。
 
