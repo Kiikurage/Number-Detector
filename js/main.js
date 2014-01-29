@@ -34,7 +34,6 @@ function init() {
 		.size(0, 0, maxX, maxY)
 
 	$("#btnClear").click(clear);
-	$("#btnAnalyze").click(analyze);
 	$("#btnAdd").click(addTeacherData);
 	$("#btnTrain").click(train);
 	$("#btnSave").click(save);
@@ -62,6 +61,7 @@ function draw(ev) {
 		y = parseInt(ev.offsetY / cellY, 10);
 
 	state[x * maxY + y][0] = 1;
+	analyze();
 	update();
 }
 
