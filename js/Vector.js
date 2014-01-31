@@ -25,7 +25,7 @@ var Vector2d = (function() {
 		for (var i = 0, size1 = instance.size1; i < size1; i++) {
 			instance[i] = [];
 			for (var j = 0, size2 = instance.size2; j < size2; j++) {
-				instance[i][j] = 1.0 * args[i][j] || 0.0;
+				instance[i][j] = args[i][j] || 0;
 			}
 		}
 
@@ -45,13 +45,14 @@ var Vector2d = (function() {
 	};
 
 	Vector2d.prototype.resize = function(size1, size2) {
+		if (!size2) size2 = 1;
 
 		var arr = [];
 		for (var i = 0; i < size1; i++) {
 			var col = [];
 			this[i] = this[i] || [];
 			for (var j = 0; j < size2; j++) {
-				col.push(this[i][j] || 0.0);
+				col.push(this[i][j] || 0);
 			}
 			arr.push(col);
 		}

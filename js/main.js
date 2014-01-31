@@ -1,6 +1,6 @@
-var maxX = 20,
-	maxY = 20,
-	Xcount = 9,
+var maxX = 100,
+	maxY = 100,
+	Xcount = 17,
 	Zcount = 20,
 	Ycount = 10,
 	$canvas, canvas, state, tlist;
@@ -8,37 +8,35 @@ var maxX = 20,
 function init() {
 	tlist = [];
 
-	for (var i = 0, max = tlist_arr.length; i < max; i++) {
-		var tdata_arr = tlist_arr[i];
-		tlist.push({
-			fv: V.apply(window, tdata_arr.fv),
-			label: V.apply(window, tdata_arr.label)
-		});
-	}
-
-	console.log("読み込み完了：教師データを" + tlist_arr.length + "個読み込みました");
-
+	// for (var i = 0, max = tlist_arr.length; i < max; i++) {
+	// 	var tdata_arr = tlist_arr[i];
+	// 	tlist.push({
+	// 		fv: V.apply(window, tdata_arr.fv),
+	// 		label: V.apply(window, tdata_arr.label)
+	// 	});
+	// }
+	// console.log("読み込み完了：教師データを" + tlist_arr.length + "個読み込みました");
 
 	$canvas = $("#canvas");
 	$canvas
 		.mousedown(function(ev) {
-			$canvas.on("mousemove", draw);
-			draw(ev);
+			$canvas.on("mousemove", draw.draw);
+			draw.begin(ev);
 		})
 		.mouseup(function(ev) {
-			$canvas.off("mousemove", draw);
+			$canvas.off("mousemove", draw.draw);
 		});
 
 	canvas = new Canvas($canvas[0])
 		.lineWidth(1)
-		.size(0, 0, maxX, maxY)
+		.size(0, 0, maxX, maxY);
 
+	draw.init();
 	$("#btnClear").click(clear);
 	$("#btnAdd").click(addTeacherData);
 	$("#btnTrain").click(train);
-	$("#btnSave").click(save);
-	$("#btnLoad").click(load);
 
+	load();
 	clear();
 }
 
@@ -54,16 +52,59 @@ function clear() {
 	setGageValue([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 }
 
-function draw(ev) {
-	var cellW = $canvas.width() / maxX,
-		cellY = $canvas.height() / maxY,
-		x = parseInt(ev.offsetX / cellW, 10),
-		y = parseInt(ev.offsetY / cellY, 10);
 
-	state[x * maxY + y][0] = 1;
-	analyze();
-	update();
-}
+var draw = (function() {
+
+	var lastX = 0,
+		lastY = 0,
+		cellW, cellY;
+
+	function drawInit() {
+		cellW = $canvas.width() / maxX;
+		cellY = $canvas.height() / maxY;
+	}
+
+	function drawBegin(ev) {
+		lastX = parseInt(ev.offsetX / cellW, 10),
+		lastY = parseInt(ev.offsetY / cellY, 10);
+	}
+
+	function draw(ev) {
+		var x = parseInt(ev.offsetX / cellW, 10),
+			y = parseInt(ev.offsetY / cellY, 10),
+			diffX = x - lastX,
+			diffY = y - lastY,
+			absDiffX = diffX < 0 ? -diffX : diffX,
+			absDiffY = diffY < 0 ? -diffY : diffY,
+			dx, dy, px, py;
+
+		if (absDiffX > absDiffY) {
+			dx = diffX > 0 ? 1 : -1;
+			dy = diffY * dx / diffX;
+			for (px = lastX, py = lastY; px != x; px += dx, py += dy) {
+				state[px * maxY + parseInt(py)][0] = 1;
+			}
+		} else {
+			dy = diffY > 0 ? 1 : -1;
+			dx = diffX * dy / diffY;
+			for (px = lastX, py = lastY; py != y; px += dx, py += dy) {
+				state[parseInt(px) * maxY + py][0] = 1;
+			}
+		}
+
+		lastX = x;
+		lastY = y;
+
+		analyze();
+		update();
+	}
+
+	return {
+		init: drawInit,
+		begin: drawBegin,
+		draw: draw
+	};
+}());
 
 function analyze() {
 	var fVector = getFVector(state).transpose(),
@@ -103,6 +144,7 @@ function addTeacherData(ev) {
 		label: T
 	});
 	console.log("教師データを追加しました");
+	train();
 }
 
 function train(ev) {
@@ -111,20 +153,22 @@ function train(ev) {
 			perceptron.train(tlist[j].fv, tlist[j].label);
 		}
 	}
+	perceptron.save();
 	console.log("学習完了");
+	analyze();
 }
 
 function update() {
 	canvas
-		.start()
-		.fillColor(182, 182, 182)
-		.rect(0, 0, maxX, maxY)
-		.fill();
+		.clear();
+	// .start()
+	// .fillColor(255, 255, 255)
+	// .rect(0, 0, maxX, maxY)
+	// .fill();
 
 	canvas
-		.fillColor(0, 128, 255)
+		.fillColor(0, 0, 0)
 		.start();
-
 	for (var x = 0; x < maxX; x++) {
 		for (var y = 0; y < maxY; y++) {
 			if (state[x * maxY + y][0]) {
@@ -132,23 +176,74 @@ function update() {
 			}
 		}
 	}
-
 	canvas
 		.fill();
+
+	var sp = getSpecialPoint(state);
+	canvas
+		.strokeColor(255, 0, 0)
+		.start()
+		.line(0, sp.gy, maxX, sp.gy)
+		.line(sp.gx, 0, sp.gx, maxY)
+		.stroke()
+		.strokeColor(0, 255, 0)
+		.start()
+		.line(0, sp.cy, maxX, sp.cy)
+		.line(sp.cx, 0, sp.cx, maxY)
+		.stroke();
+}
+
+function getSpecialPoint(v) {
+
+	var weightX = 0,
+		weightY = 0,
+		right = 0,
+		bottom = 0,
+		left = maxX,
+		top = maxY,
+		gx = 0,
+		gy = 0,
+		cx = 0,
+		cy = 0,
+		count = 0;
+
+	for (var x = 0; x < maxX; x++) {
+		for (var y = 0; y < maxY; y++) {
+			if (v[x * maxY + y] != 0) {
+
+				left = x < left ? x : left;
+				top = y < top ? y : top;
+				right = x > right ? x : right;
+				bottom = y > bottom ? y : bottom;
+
+				weightX += x;
+				weightY += y;
+				count++;
+			}
+		}
+	}
+
+	return {
+		gx: parseInt(weightX / count),
+		gy: parseInt(weightY / count),
+		cx: parseInt((left + right) / 2),
+		cy: parseInt((top + bottom) / 2)
+	}
 }
 
 function getFVector(v) {
-	//result[0] はバイアスで常に1
-	result = [1, 0, 0, 0, 0, 0, 0, 0, 0];
+	result = V().resize(Xcount);
+	result[0][0] = 1; //result[0] はバイアスで常に1
 
-	//	左上、右上、左下、右下　の順でビット化
-	//	■□		■□
-	//	□■		■■
-	//	1001	1011
-	//	→9		→11
+	var sp = getSpecialPoint(v),
+		gx = sp.gx,
+		gy = sp.gy,
+		cx = sp.cx,
+		cy = sp.cy;
 
-	for (var x = 0; x < maxX - 1; x++) {
-		for (var y = 0; y < maxY - 1; y++) {
+	//中心から縦横2つずつ、4区画に分けてデータを数える
+	for (var x = 0; x < cx; x++) {
+		for (var y = 0; y < cy; y++) {
 			var i = 0;
 			i |= v[x * maxY + y][0];
 			i |= v[(x + 1) * maxY + y][0] << 1;
@@ -158,56 +253,127 @@ function getFVector(v) {
 			// ■■
 			// □□
 			if (i == 3) {
-				result[1]++;
+				result[1][0]++;
 			}
 
 			// ■□
 			// ■□
 			if (i == 5) {
-				result[2]++;
+				result[2][0]++;
 			}
 
 			// ■□
 			// □■
 			if (i == 9) {
-				result[3]++;
+				result[3][0]++;
 			}
 
 			// □■
 			// ■□
 			if (i == 6) {
-				result[4]++;
+				result[4][0]++;
 			}
+		}
+		for (var y = cy; y < maxY - 1; y++) {
+			var i = 0;
+			i |= v[x * maxY + y][0];
+			i |= v[(x + 1) * maxY + y][0] << 1;
+			i |= v[x * maxY + y + 1][0] << 2;
+			i |= v[(x + 1) * maxY + y + 1][0] << 3;
 
 			// ■■
+			// □□
+			if (i == 3) {
+				result[5][0]++;
+			}
+
 			// ■□
-			if (i == 7) {
-				result[5]++;
-			}
-
-			// ■■
-			// □■
-			if (i == 11) {
-				result[6]++;
+			// ■□
+			if (i == 5) {
+				result[6][0]++;
 			}
 
 			// ■□
-			// ■■
-			if (i == 13) {
-				result[7]++;
+			// □■
+			if (i == 9) {
+				result[7][0]++;
 			}
 
 			// □■
-			// ■■
-			if (i == 14) {
-				result[8]++;
+			// ■□
+			if (i == 6) {
+				result[8][0]++;
 			}
 		}
 	}
+	for (var x = cx; x < maxX - 1; x++) {
+		for (var y = 0; y < gy; y++) {
+			var i = 0;
+			i |= v[x * maxY + y][0];
+			i |= v[(x + 1) * maxY + y][0] << 1;
+			i |= v[x * maxY + y + 1][0] << 2;
+			i |= v[(x + 1) * maxY + y + 1][0] << 3;
 
-	// V.apply(window, result).print();
+			// ■■
+			// □□
+			if (i == 3) {
+				result[9][0]++;
+			}
 
-	return V.apply(window, result);
+			// ■□
+			// ■□
+			if (i == 5) {
+				result[10][0]++;
+			}
+
+			// ■□
+			// □■
+			if (i == 9) {
+				result[11][0]++;
+			}
+
+			// □■
+			// ■□
+			if (i == 6) {
+				result[12][0]++;
+			}
+
+		}
+		for (var y = cy; y < maxY - 1; y++) {
+			var i = 0;
+			i |= v[x * maxY + y][0];
+			i |= v[(x + 1) * maxY + y][0] << 1;
+			i |= v[x * maxY + y + 1][0] << 2;
+			i |= v[(x + 1) * maxY + y + 1][0] << 3;
+
+			// ■■
+			// □□
+			if (i == 3) {
+				result[13][0]++;
+			}
+
+			// ■□
+			// ■□
+			if (i == 5) {
+				result[14][0]++;
+			}
+
+			// ■□
+			// □■
+			if (i == 9) {
+				result[15][0]++;
+			}
+
+			// □■
+			// ■□
+			if (i == 6) {
+				result[16][0]++;
+			}
+
+		}
+	}
+
+	return result;
 }
 
 function setGageValue(value) {
@@ -275,6 +441,7 @@ function load() {
 	perceptron.load();
 
 	var tlist_arr = JSON.parse(localStorage.getItem("tlist"));
+	if (!tlist_arr) return;
 	for (var i = 0, max = tlist_arr.length; i < max; i++) {
 		var tdata_arr = tlist_arr[i];
 		tlist.push({
@@ -291,8 +458,20 @@ $(init);
 
 var perceptron = (function() {
 	var _ = {},
-		W1 = V.apply(window, w1_arr),
-		W2 = V.apply(window, w2_arr);
+		W1 = V().resize(Xcount, Zcount),
+		W2 = V().resize(Zcount, Ycount);
+
+	for (var x = 0; x < Xcount; x++) {
+		for (var z = 0; z < Zcount; z++) {
+			W1[x][z] = 0.01;
+		}
+	}
+
+	for (var z = 0; z < Zcount; z++) {
+		for (var y = 0; y < Xcount; y++) {
+			W2[z][y] = 0.01;
+		}
+	}
 
 	_.W1 = function() {
 		return W1;
@@ -385,6 +564,7 @@ var perceptron = (function() {
 		// Y.transpose().print();
 		// console.log("誤差");
 		// DELTA_Y.transpose().multi(DELTA_Y).print();
+
 	}
 
 	_.save = function() {
@@ -413,19 +593,26 @@ var perceptron = (function() {
 		w1_arr = JSON.parse(localStorage.getItem("w1_arr"));
 		w2_arr = JSON.parse(localStorage.getItem("w2_arr"));
 
-		W1 = V.apply(window, w1_arr);
-		W2 = V.apply(window, w2_arr);
+		if (w1_arr) W1 = V.apply(window, w1_arr);
+		if (w2_arr) W2 = V.apply(window, w2_arr);
 	}
 
 	return _
 }());
 
-var console = {
-	log: function(txt) {
-		$("#log")
-			.text(txt)
-			.fadeIn(600)
-			.delay(4000)
-			.fadeOut(600);
-	}
-}
+// var console = {
+// 	$log: null,
+// 	log: function(txt) {
+// 		this.$log = $("#log");
+// 		this.log = function(txt) {
+// 			this.$log
+// 				.clearQueue()
+// 				.hide()
+// 				.text(txt)
+// 				.fadeIn(600)
+// 				.delay(4000)
+// 				.fadeOut(600);
+// 		}
+// 		this.log(txt);
+// 	}
+// }

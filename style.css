@@ -151,3 +151,6 @@ footer {
   color: #fff;
   background: #0a3;
 }
+#canvas {
+  border: 1px solid #000;
+}
