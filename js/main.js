@@ -36,7 +36,7 @@ function init() {
 	$("#btnAdd").click(addTeacherData);
 	$("#btnTrain").click(train);
 
-	load();
+	// load();
 	clear();
 }
 
