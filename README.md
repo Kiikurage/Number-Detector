@@ -1,4 +1,5 @@
 #数字の認識
+http://temperman.github.io/Number-Detector/
 多層パーセプトロンの勉強。
 数字（0〜9の1文字）を認識します。
 
